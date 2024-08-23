@@ -1,16 +1,19 @@
 package num
 
+import (
+	"golang.org/x/exp/constraints"
+)
+
+
 var (
-	isMultipleOf3 = isMultipleOfX(3)
-	isMultipleOf5 = isMultipleOfX(5)
-	isGreaterThan5 = isGreaterThanX(5)
-	isGreaterThan10 = isGreaterThanX(10)
-	isGreaterThan15 = isGreaterThanX(15)
-	isLessThan6 = isLessThanX(6)
-	isLessThan15 = isLessThanX(15)
+	isMultipleOf3 = isMultipleOfX[int](3)
+	isMultipleOf5 = isMultipleOfX[int](5)
+	isGreaterThan5 = isGreaterThanX[int](5)
+	isGreaterThan10 = isGreaterThanX[int](10)
 )
 
 type Condition func(int) bool
+type ConditionGeneric[T any] func(T) bool
 
 func CheckEvenNumbers(nums []int) []int {
 	var result []int
@@ -69,6 +72,7 @@ func CheckEvenMultiplesOf5(nums []int) []int {
 
 	return result
 }
+
 func CheckOddMultipleOf3GreaterThan10(nums []int) []int {
 	var result []int
 
@@ -81,6 +85,7 @@ func CheckOddMultipleOf3GreaterThan10(nums []int) []int {
 	return result
 }
 
+// checks if all conditions are true for each element
 func CheckAllConditions(nums []int, conditions ...Condition) []int {
 	var result []int
 	var flag bool
@@ -102,6 +107,7 @@ func CheckAllConditions(nums []int, conditions ...Condition) []int {
 	return result
 }
 
+// checks if any conditions are true for each element
 func CheckAnyConditions(nums []int, conditions ...Condition) []int {
 	var result []int
 
@@ -116,6 +122,46 @@ func CheckAnyConditions(nums []int, conditions ...Condition) []int {
 
 	return result
 }
+
+
+// checks if all conditions are true for each element, generic version
+func CheckAllConditionsGeneric[T constraints.Ordered](num []T, conditions ...ConditionGeneric[T]) []T {
+    var result []T
+	var flag bool
+
+    for _, num := range num {		
+		flag = true
+		for _, condition := range conditions {
+			if !condition(num) {
+				flag = false
+				break
+			}
+		}
+
+		if flag {
+			result = append(result, num)
+		}
+    }
+
+    return result
+}
+
+// checks if any condition is true for each element, generic version
+func CheckAnyConditionsGeneric[T constraints.Ordered](nums []T, conditions ...ConditionGeneric[T]) []T {
+    var result []T
+
+    for _, num := range nums {
+		for _, condition := range conditions {
+			if condition(num) {
+				result = append(result, num)
+				break
+			}
+		}
+    }
+
+    return result
+}
+
 
 func isOdd(num int) bool {
 	return num % 2 != 0
@@ -139,20 +185,21 @@ func isPrime(num int) bool {
 	return true
 }
 
-func isMultipleOfX(x int) Condition {
-	return func(num int) bool {
-		return num % x == 0
-	}
+func isMultipleOfX[T constraints.Integer](x T) ConditionGeneric[T] {
+    return func(num T) bool {
+        return num%x == 0
+    }
 }
 
-func isGreaterThanX(x int) Condition {
-	return func(num int) bool {
+
+func isGreaterThanX[T constraints.Ordered](x T) ConditionGeneric[T] {
+	return func(num T) bool {
 		return num > x
 	}
 }
 
-func isLessThanX(x int) Condition {
-	return func(num int) bool {
-		return x > num
+func isLesserThanX[T constraints.Ordered](x T) ConditionGeneric[T] {
+	return func(num T) bool {
+		return num < x
 	}
 }
